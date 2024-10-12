@@ -8,9 +8,12 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 
 export default function SummaryList(props) {
+    const handleTabChange = (tabIndex) => {
+        props.setTab(tabIndex); 
+    };
     return (
         <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            <ListItem alignItems="flex-start">
+            <ListItem alignItems="flex-start" button onClick={() => handleTabChange(1)}>
                 <ListItemAvatar>
                     <Avatar alt="Error" src="images/error.png" />
                 </ListItemAvatar>
@@ -31,7 +34,7 @@ export default function SummaryList(props) {
                 />
             </ListItem>
             <Divider variant="inset" component="li" />
-            <ListItem alignItems="flex-start">
+            <ListItem alignItems="flex-start" onClick={() => handleTabChange(2)}>
                 <ListItemAvatar>
                     <Avatar alt="Warning" src="images/warning.png" />
                 </ListItemAvatar>
@@ -52,7 +55,7 @@ export default function SummaryList(props) {
                 />
             </ListItem>
             <Divider variant="inset" component="li" />
-            <ListItem alignItems="flex-start">
+            <ListItem alignItems="flex-start" onClick={() => handleTabChange(3)}>
                 <ListItemAvatar>
                     <Avatar alt="Notice" src="images/notice.png" />
                 </ListItemAvatar>

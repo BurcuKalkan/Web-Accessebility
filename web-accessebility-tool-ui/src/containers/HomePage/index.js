@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import CardComponent from '../../components/Card';
-import { Grid, Paper } from '@mui/material';
+import { Grid, Paper, CircularProgress, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import TabComponent from '../../components/Tab';
 
@@ -59,15 +59,23 @@ const HomePage = () => {
                         }
                     </Grid>
                     <Grid item xs={9} >
-                        <Item><iframe
-                            ref={iframeRef}
-                            id="inlineFrameExample"
-                            title="Inline Frame Example"
-                            width="100%"
-                            height="800px"
-                            onLoad={onLoad}
-                        >
-                        </iframe></Item>
+                        <Item>
+                        {!iframeLoaded && (
+                                // İframe yüklenirken gösterilecek spinner
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '800px' }}>
+                                    <CircularProgress />
+                                    <Typography variant="h6" style={{ marginLeft: '10px' }}>Loading...</Typography>
+                                </div>
+                            ) }
+                            <iframe
+                                    ref={iframeRef}
+                                    id="inlineFrameExample"
+                                    title="Inline Frame Example"
+                                    width="100%"
+                                    height="800px"
+                                    onLoad={onLoad}
+                                />
+                        </Item>
                     </Grid>
                 </Grid>}
 
