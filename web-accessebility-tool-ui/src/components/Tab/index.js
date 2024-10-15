@@ -27,9 +27,10 @@ function TabPanel(props) {
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
       {...other}
+      style={{ height: "800px" }}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 3, height: "100%" }}>
           <Typography>{children}</Typography>
         </Box>
       )}
@@ -44,12 +45,9 @@ TabPanel.propTypes = {
 };
 
 export default function TabComponent(props) {
-  const [value, setValue] = useState(0);
-
   useEffect(() => {
     if (!props.result) return;
     const newList = props.result.issues;
-
     const errList = errorList(newList);
     const warnList = warningList(newList);
     const notList = noticeList(newList);
@@ -59,13 +57,13 @@ export default function TabComponent(props) {
     props.setNotices(notList);
 
     // Show error images by default
-    if (value === 0) {
+    if (props.value === 0) {
       createImage(errList, "images/alt_missing.ico");
     }
   }, [props.result]);
 
   const handleChange = (event, newValue) => {
-    setValue(newValue);
+    props.setValue(newValue);
 
     clearImages();
 
@@ -82,25 +80,8 @@ export default function TabComponent(props) {
     }
   };
 
-  const filterByIframeDocument = (issues) => {
-    const iframeDocument = document.querySelector("#inlineFrameExample")
-      .contentWindow.document;
-
-    if (iframeDocument) {
-      return issues.filter((val) => {
-        try {
-          const res = iframeDocument.querySelector(val.selector);
-          return res !== null && res.tagName.toLowerCase() !== "iframe";
-        } catch (error) {
-          return false;
-        }
-      });
-    }
-    return [];
-  };
-
   const handleViewDetails = () => {
-    setValue(1);
+    props.setValue(1);
   };
 
   const errorList = (newList) => {
@@ -126,75 +107,93 @@ export default function TabComponent(props) {
 
     // Check if dialog is out of the viewport and adjust its position if necessary
     if (rect.top < 0) {
-      dialog.style.top = "30px"; // Adjust if the top is out of view
+      dialog.style.top = "20px"; // Adjust if the top is out of view
+    }
+    if (rect.top > iframe.height) {
+      dialog.style.top = iframe.height - 20; // Adjust if the top is out of view
     }
     if (rect.left < 0) {
-      dialog.style.left = "10px"; // Adjust if the left is out of view
+      dialog.style.left = "20px"; // Adjust if the left is out of view
     }
     if (rect.bottom > iframe.height) {
-      dialog.style.top = `${-rect.height - 50}px`; // Move the dialog up if bottom is out of view
+      dialog.style.bottom = "10px"; // Move the dialog up if bottom is out of view
     }
     if (rect.right > iframe.width) {
-      dialog.style.left = `${-rect.width + (rect.width/2) + 15}px`; // Move the dialog left if right is out of view
+      dialog.style.left = `${-rect.width + rect.width / 2 + 15}px`; // Move the dialog left if right is out of view
     }
   };
 
   const createImage = async (newList, src) => {
-    let changes = [];
     // Tüm açık dialogları saklamak için bir dizi oluştur
     const openDialogs = [];
-    const iframeDocument = document.querySelector("#inlineFrameExample")
-      .contentWindow.document;
+    const iframeDocument = document.querySelector("#inlineFrameExample").contentWindow.document;
 
-    newList.map((item) => {
+      newList.forEach((item) => {
       try {
         const newDiv = document.createElement("div");
         const newImage = document.createElement("img");
-        //html > body > header > div:nth-child(1) > div > div > div > div > ul:nth-child(2) > li:nth-child(2) > span > input
         let selectorResult = iframeDocument.querySelector(item.selector);
 
         // Apply styles to the new div
         newDiv.classList.add("image-container");
-        newDiv.style.display = "inline-block"; // Ensures the div doesn't break onto a new line
-        newDiv.style.padding = "5px"; // Adjust padding as needed
+        newDiv.style.display = "inline-block";
+        newDiv.style.padding = "5px";
         newDiv.style.position = "relative";
-        newDiv.style.zIndex = "1000"; // 
-        newImage.style.width = "30px"; // Adjust the width as needed
-        newImage.style.height = "30px"; // Maintain aspect ratio
-        newImage.style.minHeight = "30px"; // Maintain aspect ratio
-        newImage.src = src; // Replace with the actual path to your image
+        newDiv.style.zIndex = 1500; 
+
+        newImage.style.width = "30px";
+        newImage.style.height = "30px";
+        newImage.style.minHeight = "30px";
+        newImage.src = src;
         newImage.alt = item.selector;
+        newImage.style.zIndex = 800;
 
         // Append the image to the div
-        newDiv.append(newImage);
+        newDiv.appendChild(newImage); // append ???
+
+        const dialog = document.createElement("div");
+        dialog.textContent = item.message;
+        dialog.style.display = "none"; // Başlangıçta görünmez
+        
+        // Fade-in ve Slide-in için başlangıç değerleri
+        dialog.style.opacity = 0;
+        dialog.style.transition = "opacity 0.3s ease-in-out, transform 0.3s ease-in-out";
+        
+        // Stil ayarları
+        dialog.style.color = "#333";  // Koyu yazı rengi
+        dialog.style.backgroundColor = "#ffffff";  // Beyaz arka plan
+        dialog.style.fontSize = "14px";
+        dialog.style.lineHeight = "1.5";
+        dialog.style.textTransform = "none";
+        dialog.style.width = "275px";
+        dialog.style.padding = "15px";
+        dialog.style.marginTop = "10px";
+        dialog.style.borderRadius = "12px";
+
+        // 3 boyutlu etki için renkli kenarlık ve gölgeler
+        dialog.style.border = "2px solid #0077cc"; // Mavi kenarlık
+        dialog.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3)"; // Güçlü siyah gölge
+        
+        // İç gölge ve derinlik etkisi
+        dialog.style.borderTopColor = "#66b3ff";  // Daha açık bir üst kenar rengi (ışık etkisi)
+        dialog.style.borderLeftColor = "#66b3ff";  // Sol kenar için açık ton
+        dialog.style.borderBottomColor = "#004080";  // Alt kenar daha koyu (derinlik)
+        dialog.style.borderRightColor = "#004080";  // Sağ kenar daha koyu ton
+
+        dialog.style.position = "absolute";
+        dialog.style.zIndex = 9999;
+
+        // Başlangıç konumu (translateX ile kaydır)
+        dialog.style.transform = "translateX(-20px)";
+
+        if (item.context.includes("<img")) dialog.style.position = "static";
+        else dialog.style.position = "absolute";
+
+        // Append the dialog to the body or another appropriate container
+        newDiv.appendChild(dialog);
 
         // Event listener to toggle dialog visibility on click
         newDiv.addEventListener("click", (event) => {
-          const dialog = document.createElement("div");
-          dialog.textContent = item.message;
-          dialog.style.display = "none";
-          dialog.style.color = "#000"; // Siyah yazı
-          dialog.style.position = "static";
-          dialog.style.fontSize="initial";
-          dialog.style.lineHeight="initial";
-          dialog.style.textTransform="initial";
-          dialog.style.width = "250px";
-          dialog.style.padding = "5px";
-          dialog.style.marginTop = "15px";
-          dialog.style.backgroundColor = "#f5f5f5"; // Açılınca arka plan rengini değiştir
-          dialog.style.borderRadius = "10px"; // Yuvarlak kenarlar
-          dialog.style.border = "2px solid #000"; // Siyah kenarlık
-          dialog.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.1)";
-          dialog.style.left = "100%";
-          dialog.style.zIndex = 1500; 
-
-          // Append the dialog to the body or another appropriate container
-          newDiv.appendChild(dialog);
-
-          dialog.addEventListener("click", (event) => {
-            closeDialog(dialog);
-        });
-
           // Eğer dialog zaten açıksa, kapat
           if (dialog.style.display === "block") {
             closeDialog(dialog);
@@ -203,7 +202,15 @@ export default function TabComponent(props) {
           }
 
           event.preventDefault();
+        });
 
+        newDiv.addEventListener("mouseenter", () => {
+          newDiv.style.transform = "scale(1.05)";
+          newDiv.style.transition = "transform 0.2s ease";
+        });
+        
+        newDiv.addEventListener("mouseleave", () => {
+          newDiv.style.transform = "scale(1)";
         });
 
         // Document seviyesinde bir tıklama olayını dinle
@@ -213,20 +220,18 @@ export default function TabComponent(props) {
 
         // Document seviyesinde bir kaydırma olayını dinle
         document.addEventListener("scroll", () => {
-          // Eğer sayfa kaydırıldıysa, tüm dialogları kapat
           openDialogs.forEach((dialog) => closeDialog(dialog));
         });
 
-        // Document seviyesinde bir kaydırma olayını dinle
-        iframeDocument.addEventListener("scroll", () => {
-          // Eğer sayfa kaydırıldıysa, tüm dialogları kapat
-          openDialogs.forEach((dialog) => closeDialog(dialog));
-        });
 
         // Fonksiyonlar açık/kapalı dialogları kontrol etmek için
         function openDialog(dialog) {
-          openDialogs.forEach((dia) => closeDialog(dia));
-          dialog.style.display = "block";
+          closeAllDialogs();
+          dialog.style.display = "block";  // Görünür yap
+          setTimeout(() => { 
+            dialog.style.opacity = 1;  // Yavaş yavaş görünürlük
+            dialog.style.transform = "translateX(0)";  // Yerine kaydır
+          }, 10);
           dialog.parentNode.parentNode.style.border = "2px solid yellow";
           openDialogs.push(dialog);
           ensureDialogIsInViewport(dialog);
@@ -234,19 +239,25 @@ export default function TabComponent(props) {
 
         function closeDialog(dialog) {
           if (dialog) {
-            dialog.style.display = "none";
+            dialog.style.opacity = 0;
+            dialog.style.transform = "translateX(-20px)";
+            setTimeout(() => {
+              dialog.style.display = "none";
+            }, 300);
+            const index = openDialogs.indexOf(dialog);
+            if (index !== -1) {
+              openDialogs.splice(index, 1);
+            }
 
             // Check if the dialog has the expected parent nodes
             if (dialog.parentNode && dialog.parentNode.parentNode) {
               dialog.parentNode.parentNode.style.border = "";
             }
-
-            // Remove the dialog from the list of open dialogs
-            const index = openDialogs.indexOf(dialog);
-            if (index !== -1) {
-              openDialogs.splice(index, 1);
-            }
           }
+        }
+
+        function closeAllDialogs() {
+          openDialogs.forEach((dialog) => closeDialog(dialog));
         }
 
         if (selectorResult) {
@@ -270,21 +281,21 @@ export default function TabComponent(props) {
   };
 
   return (
-    <div>
+    <div style={{ height: "800px" }}>
       {/* Tabs component */}
-      <Tabs value={value} onChange={handleChange}>
+      <Tabs value={props.value} onChange={handleChange}>
         <Tab label="Summary" />
         <Tab label="Error List" />
         <Tab label="Warning List" />
         <Tab label="Notice List" />
       </Tabs>
 
-      <TabPanel value={value} index={0}>
+      <TabPanel value={props.value} index={0}>
         <SummaryList
           error={props.errors.length}
           warning={props.warnings.length}
           notice={props.notices.length}
-          setTab={setValue}
+          setTab={props.setValue}
         ></SummaryList>
         <ButtonComponent
           btnName={"View Details"}
@@ -292,7 +303,7 @@ export default function TabComponent(props) {
         ></ButtonComponent>
       </TabPanel>
 
-      <TabPanel value={value} index={1}>
+      <TabPanel value={props.value} index={1}>
         <Item>
           <SelectedListItem
             result={props.errors}
@@ -303,7 +314,7 @@ export default function TabComponent(props) {
         </Item>
       </TabPanel>
 
-      <TabPanel value={value} index={2}>
+      <TabPanel value={props.value} index={2}>
         <Item>
           <SelectedListItem
             result={props.warnings}
@@ -314,7 +325,7 @@ export default function TabComponent(props) {
         </Item>
       </TabPanel>
 
-      <TabPanel value={value} index={3}>
+      <TabPanel value={props.value} index={3}>
         <Item>
           <SelectedListItem
             result={props.notices}

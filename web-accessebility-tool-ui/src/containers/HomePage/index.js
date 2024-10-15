@@ -18,8 +18,7 @@ const HomePage = () => {
   const [url, setUrl] = useState("");
   const [iframeLoaded, setIFrameLoaded] = useState(false);
   const title = "Website Accessibility Tool";
-
-  // State for errors, warnings, and notices
+  const [value, setValue] = useState(0); 
   const [errors, setErrors] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [notices, setNotices] = useState([]);
@@ -35,7 +34,7 @@ const HomePage = () => {
       if (iframeRef.current) {
         const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
         doc.open();
-        doc.write(result.page);  // result.page'in HTML içeriğini yaz
+        doc.write(result.page);
         doc.close();
       }
       setIFrameLoaded(false);
@@ -46,7 +45,8 @@ const HomePage = () => {
   };
 
   const handleSubmit = () => {
-    // Reset errors, warnings, notices when submitting a new URL
+    setValue(0);
+
     setErrors([]);
     setWarnings([]);
     setNotices([]);
@@ -84,13 +84,14 @@ const HomePage = () => {
                 setErrors={setErrors} 
                 setWarnings={setWarnings}
                 setNotices={setNotices}
+                value={value}          
+                setValue={setValue} 
               ></TabComponent>
             }
           </Grid>
           <Grid item xs={9}>
             <Item>
               {!iframeLoaded && (
-                // İframe yüklenirken gösterilecek spinner
                 <div
                   style={{
                     display: "flex",
@@ -110,7 +111,7 @@ const HomePage = () => {
                 id="inlineFrameExample"
                 title="Inline Frame Example"
                 width="100%"
-                height="800px"
+                height="868px"
                 onLoad={onLoad}
               />
             </Item>
