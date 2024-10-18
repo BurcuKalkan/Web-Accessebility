@@ -18,7 +18,7 @@ const HomePage = () => {
   const [url, setUrl] = useState("");
   const [iframeLoaded, setIFrameLoaded] = useState(false);
   const title = "Website Accessibility Tool";
-  const [value, setValue] = useState(0); 
+  const [selectedTab, setSelectedTab] = useState(0); 
   const [errors, setErrors] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [notices, setNotices] = useState([]);
@@ -45,7 +45,7 @@ const HomePage = () => {
   };
 
   const handleSubmit = () => {
-    setValue(0);
+    setSelectedTab(0);
 
     setErrors([]);
     setWarnings([]);
@@ -84,8 +84,8 @@ const HomePage = () => {
                 setErrors={setErrors} 
                 setWarnings={setWarnings}
                 setNotices={setNotices}
-                value={value}          
-                setValue={setValue} 
+                selectedTab={selectedTab}          
+                setSelectedTab={setSelectedTab} 
               ></TabComponent>
             }
           </Grid>

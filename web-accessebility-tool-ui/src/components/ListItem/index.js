@@ -8,8 +8,6 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 
 export default function SelectedListItem(props) {
-  const [selectedIndex, setSelectedIndex] = useState(1);
-  const [selectedItem, setSelectedItem] = useState({});
   const [selectedImage, setSelectedImage] = useState();
   const [selectedImageStyle, setSelectedImageStyle] = useState(null);
 
@@ -38,11 +36,8 @@ export default function SelectedListItem(props) {
   };
 
   const handleListItemClick = (item, index) => {
-    setSelectedIndex(index);
-    setSelectedItem(item);
-
-    console.log(item);
-
+    props.setSelectedItem(item);
+    props.setSelectedItemIndex(index);
     handleListItemImage(item);
   };
 
@@ -54,9 +49,7 @@ export default function SelectedListItem(props) {
     const image = document
       .querySelector("#inlineFrameExample")
       .contentWindow.document.querySelector(`img[alt="${item.selector}"]`);
-    const obj = document
-      .querySelector("#inlineFrameExample")
-      .contentWindow.document.querySelector(`${item.selector}`);
+
     setSelectedImage(image);
 
     if (image) {
@@ -91,7 +84,7 @@ export default function SelectedListItem(props) {
         {props.result.map((item, index) => (
           <ListItemButton
             key={index}
-            selected={selectedIndex === index}
+            selected={props.selectedItemIndex === index}
             onClick={() => handleListItemClick(item, index)}
           >
             {
