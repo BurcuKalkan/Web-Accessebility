@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import PropTypes from "prop-types";
 import SummaryList from "../SummaryList";
-import ButtonComponent from "../Button";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -55,8 +54,6 @@ TabPanel.propTypes = {
 };
 
 export default function TabComponent(props) {
-  const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
-  const [selectedItem, setSelectedItem] = useState(-1);
 
   const createDialog = () => {
     let existing = document.querySelector("#openDialog");
@@ -117,8 +114,15 @@ export default function TabComponent(props) {
       }
     };
 
+    const handleScroll = () => {
+      if (openDialog.style.display !== "none") {
+        closeDialogHandler(openDialog);
+      }
+    };
+
     // Ana belgeye event listener ekle
     document.addEventListener("click", handleClickOutside);
+    document.addEventListener("scroll", handleScroll);
     const iframeElement = document.querySelector("#inlineFrameExample");
 
     const addIframeListeners = () => {
@@ -135,6 +139,8 @@ export default function TabComponent(props) {
             closeDialogHandler(openDialog);
           }
         });
+
+        iframeDocument.addEventListener("scroll", handleScroll);
       }
     };
 
@@ -142,7 +148,13 @@ export default function TabComponent(props) {
     iframeElement.addEventListener("load", addIframeListeners);
 
     return () => {
+      // Clean up event listeners
       document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("scroll", handleScroll);
+
+      if (iframeElement) {
+        iframeElement.removeEventListener("load", addIframeListeners);
+      }
     };
   }, []);
 
@@ -326,8 +338,8 @@ export default function TabComponent(props) {
       }
 
       openDialogHandler(item, targetElement);
-      setSelectedItem(item);
-      setSelectedItemIndex(index);
+      props.setSelectedItem(item);
+      props.setSelectedItemIndex(index);
     }
   };
 
@@ -407,10 +419,10 @@ export default function TabComponent(props) {
             title={"error"}
             iframe={props.iframe}
             url={props.url}
-            selectedItemIndex={selectedItemIndex}
-            setSelectedItemIndex={setSelectedItemIndex}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
+            selectedItemIndex={props.selectedItemIndex}
+            setSelectedItemIndex={props.setSelectedItemIndex}
+            selectedItem={props.selectedItem}
+            setSelectedItem={props.setSelectedItem}
           ></SelectedListItem>
         </Item>
       </TabPanel>
@@ -422,10 +434,10 @@ export default function TabComponent(props) {
             title={"warning"}
             iframe={props.iframe}
             url={props.url}
-            selectedItemIndex={selectedItemIndex}
-            setSelectedItemIndex={setSelectedItemIndex}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
+            selectedItemIndex={props.selectedItemIndex}
+            setSelectedItemIndex={props.setSelectedItemIndex}
+            selectedItem={props.selectedItem}
+            setSelectedItem={props.setSelectedItem}
           ></SelectedListItem>
         </Item>
       </TabPanel>
@@ -437,10 +449,10 @@ export default function TabComponent(props) {
             title={"notice"}
             frame={props.iframe}
             url={props.url}
-            selectedItemIndex={selectedItemIndex}
-            setSelectedItemIndex={setSelectedItemIndex}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
+            selectedItemIndex={props.selectedItemIndex}
+            setSelectedItemIndex={props.setSelectedItemIndex}
+            selectedItem={props.selectedItem}
+            setSelectedItem={props.setSelectedItem}
           ></SelectedListItem>
         </Item>
       </TabPanel>

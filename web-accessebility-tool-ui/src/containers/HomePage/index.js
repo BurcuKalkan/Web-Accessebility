@@ -9,9 +9,8 @@ const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
   textAlign: "center",
   color: theme.palette.text.secondary,
-  
-    padding: '0px', // Adjust as needed
-  
+
+  padding: "0px", // Adjust as needed
 }));
 
 const HomePage = () => {
@@ -20,10 +19,12 @@ const HomePage = () => {
   const [url, setUrl] = useState("https://gsu.edu.tr/tr");
   const [iframeLoaded, setIFrameLoaded] = useState(false);
   const title = "Website Accessibility Tool";
-  const [selectedTab, setSelectedTab] = useState(0); 
+  const [selectedTab, setSelectedTab] = useState(0);
   const [errors, setErrors] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [notices, setNotices] = useState([]);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(-1);
+  const [selectedItem, setSelectedItem] = useState(-1);
 
   const iframeRef = useRef(null);
 
@@ -34,7 +35,9 @@ const HomePage = () => {
       const result = await response.json();
       setResult(result.results);
       if (iframeRef.current) {
-        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
+        const doc =
+          iframeRef.current.contentDocument ||
+          iframeRef.current.contentWindow.document;
         doc.open();
         doc.write(result.page);
         doc.close();
@@ -46,12 +49,24 @@ const HomePage = () => {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Iframe'i yukarı kaydır
+    const iframeElement = document.querySelector("#inlineFrameExample");
+    if (iframeElement?.contentWindow) {
+      iframeElement.contentWindow.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const handleSubmit = () => {
     setSelectedTab(0);
 
     setErrors([]);
     setWarnings([]);
     setNotices([]);
+    setSelectedItemIndex(-1);
+    setSelectedItem(-1);
 
     setVisible(true);
     setResult(null);
@@ -62,6 +77,7 @@ const HomePage = () => {
 
   const onLoad = () => {
     setIFrameLoaded(true);
+    scrollToTop();
   };
 
   return (
@@ -80,19 +96,23 @@ const HomePage = () => {
                 result={iframeLoaded ? result : undefined}
                 iframe={iframeRef}
                 url={url}
-                errors={errors} 
-                warnings={warnings} 
-                notices={notices} 
-                setErrors={setErrors} 
+                errors={errors}
+                warnings={warnings}
+                notices={notices}
+                setErrors={setErrors}
                 setWarnings={setWarnings}
                 setNotices={setNotices}
-                selectedTab={selectedTab}          
-                setSelectedTab={setSelectedTab} 
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+                selectedItemIndex={selectedItemIndex}
+                setSelectedItemIndex={setSelectedItemIndex}
+                selectedItem={selectedItem}
+                setSelectedItem={setSelectedItem}
               ></TabComponent>
             }
           </Grid>
-          <Grid item xs={10} >
-            <Item sx={{ paddingLeft: '0px' }}>
+          <Grid item xs={10}>
+            <Item sx={{ paddingLeft: "0px" }}>
               {!iframeLoaded && (
                 <div
                   style={{

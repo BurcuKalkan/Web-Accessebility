@@ -13,7 +13,7 @@ export default function SummaryList(props) {
     };
     return (
         <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            <ListItem alignItems="flex-start"  onClick={() => handleTabChange(1)}>
+            <ListItem alignItems="flex-start" >
                 <ListItemAvatar>
                     <Avatar alt="Error" src="images/error.png" />
                 </ListItemAvatar>
@@ -34,7 +34,7 @@ export default function SummaryList(props) {
                 />
             </ListItem>
             <Divider variant="inset" component="li" />
-            <ListItem alignItems="flex-start" onClick={() => handleTabChange(2)}>
+            <ListItem alignItems="flex-start">
                 <ListItemAvatar>
                     <Avatar alt="Warning" src="images/warning.png" />
                 </ListItemAvatar>
@@ -55,7 +55,7 @@ export default function SummaryList(props) {
                 />
             </ListItem>
             <Divider variant="inset" component="li" />
-            <ListItem alignItems="flex-start" onClick={() => handleTabChange(3)}>
+            <ListItem alignItems="flex-start" >
                 <ListItemAvatar>
                     <Avatar alt="Notice" src="images/notice.png" />
                 </ListItemAvatar>
