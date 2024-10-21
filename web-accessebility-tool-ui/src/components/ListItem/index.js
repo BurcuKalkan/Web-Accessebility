@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -6,32 +6,33 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
+import { styled, Collapse } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+
+const CustomListItemButton = styled(ListItemButton)(({ theme, selected }) => ({
+  transition: "all 0.3s ease",
+  ...(selected && {
+    backgroundColor: "#ffeb3b", // Highlight the selected item with a yellow background
+    border: "2px solid #fbc02d", // Border similar to the image highlighting
+    boxShadow: "0 0 10px rgba(255, 193, 7, 0.7)",
+    transform: "scale(1.05)",
+  }),
+}));
 
 export default function SelectedListItem(props) {
   const [selectedImage, setSelectedImage] = useState();
-  const [selectedImageStyle, setSelectedImageStyle] = useState(null);
-
-  useEffect(() => {
-    if (selectedImage) {
-      setSelectedImageStyle({
-        border: selectedImage.style.border,
-        boxShadow: selectedImage.style.boxShadow,
-        transform: selectedImage.style.transform,
-        filter: selectedImage.style.filter,
-        transition: selectedImage.style.transition,
-        perspective: selectedImage.style.perspective
-      });
-    }
-  }, [selectedImage]);
+  const listItemRefs = useRef([]);
 
   const resetSelectedImageStyle = () => {
-    if (selectedImageStyle && selectedImage) {
-      selectedImage.style.border = "";
-      selectedImage.style.boxShadow = "";
-      selectedImage.style.transform = "";
-      selectedImage.style.filter = "";
-      selectedImage.style.transition = "";
-      selectedImage.style.perspective = "";
+    if (selectedImage) {
+      Object.assign(selectedImage.style, {
+        border: "",
+        boxShadow: "",
+        transform: "",
+        filter: "",
+        transition: "",
+        perspective: "",
+      });
     }
   };
 
@@ -53,20 +54,22 @@ export default function SelectedListItem(props) {
     setSelectedImage(image);
 
     if (image) {
-      image.style.border = "3px solid yellow"; // Sarı kenarlık
-      image.style.boxShadow = "0 0 20px rgba(255, 255, 0, 0.8), 0 0 30px rgba(255, 255, 0, 0.5)"; 
-      image.style.transform = "scale(1.2) rotateY(10deg)"; // Büyütme ve 3D döndürme efekti
-      image.style.transition = "all 0.4s ease"; // Geçiş animasyonu
-      image.style.filter = "brightness(1.3) contrast(1.2)"; // Parlaklık ve kontrast artırma
-      image.style.perspective = "1000px";
-
-      // Use scrollIntoView to bring the image into the viewport
-      image.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center",
+      Object.assign(image.style, {
+        border: "3px solid yellow",
+        boxShadow:
+          "0 0 20px rgba(255, 255, 0, 0.8), 0 0 30px rgba(255, 255, 0, 0.5)",
+        transform: "scale(1.2) rotateY(10deg)",
+        transition: "all 0.4s ease",
+        filter: "brightness(1.3) contrast(1.2)",
+        //  perspective: "1000px",
       });
     }
+
+    image.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "center",
+    });
   };
 
   return (
@@ -82,18 +85,69 @@ export default function SelectedListItem(props) {
     >
       <List component="nav">
         {props.result.map((item, index) => (
-          <ListItemButton
-            key={index}
-            selected={props.selectedItemIndex === index}
-            onClick={() => handleListItemClick(item, index)}
-          >
-            {
+          <Box key={index}>
+            {/* CustomListItemButton to select an item */}
+            <CustomListItemButton
+              ref={(el) => (listItemRefs.current[index] = el)}
+              selected={props.selectedItemIndex === index}
+              onClick={() => handleListItemClick(item, index)}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between", // Space between avatar and text
+                overflow: "hidden", // Hide overflow
+              }}
+            >
               <ListItemAvatar>
                 <Avatar alt="Error" src={`images/${props.title}.png`} />
               </ListItemAvatar>
-            }
-            <ListItemText primary={item.code} />
-          </ListItemButton>
+              <Tooltip title={item.code} arrow>
+                {" "}
+                {/* Tooltip to show full code on hover */}
+                <ListItemText
+                  primary={item.code}
+                  sx={{
+                    maxWidth: "200px", // Set a max width for the text
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap", // Prevent wrapping
+                    marginLeft: 1, // Add some space between the avatar and the text
+                  }}
+                />
+              </Tooltip>
+            </CustomListItemButton>
+
+            <Collapse
+              in={props.selectedItemIndex === index}
+              timeout="auto"
+              unmountOnExit
+            >
+              <Box
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f5f5f5",
+                  borderLeft: "3px solid #ffeb3b",
+                }}
+              >
+                <Tooltip title={item.context} arrow>
+                  {" "}
+                  {/* Tooltip for h4 text */}
+                  <h4
+                    style={{
+                      maxWidth: "300px", // Set a max width
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap", // Prevent wrapping
+                    }}
+                  >
+                    {item.context}
+                  </h4>
+                </Tooltip>
+                <p>{item.message}</p>
+              </Box>
+            </Collapse>
+
+            <Divider />
+          </Box>
         ))}
       </List>
       <Divider />

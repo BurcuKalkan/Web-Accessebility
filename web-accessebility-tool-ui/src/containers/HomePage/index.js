@@ -7,15 +7,17 @@ import TabComponent from "../../components/Tab";
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
-  padding: theme.spacing(1),
   textAlign: "center",
   color: theme.palette.text.secondary,
+  
+    padding: '0px', // Adjust as needed
+  
 }));
 
 const HomePage = () => {
   const [isVisible, setVisible] = useState(false);
   const [result, setResult] = useState();
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("https://gsu.edu.tr/tr");
   const [iframeLoaded, setIFrameLoaded] = useState(false);
   const title = "Website Accessibility Tool";
   const [selectedTab, setSelectedTab] = useState(0); 
@@ -72,7 +74,7 @@ const HomePage = () => {
 
       {isVisible && (
         <Grid container spacing={1}>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             {
               <TabComponent
                 result={iframeLoaded ? result : undefined}
@@ -89,8 +91,8 @@ const HomePage = () => {
               ></TabComponent>
             }
           </Grid>
-          <Grid item xs={9}>
-            <Item>
+          <Grid item xs={10} >
+            <Item sx={{ paddingLeft: '0px' }}>
               {!iframeLoaded && (
                 <div
                   style={{
@@ -101,7 +103,7 @@ const HomePage = () => {
                   }}
                 >
                   <CircularProgress />
-                  <Typography variant="h6" style={{ marginLeft: "10px" }}>
+                  <Typography variant="h6" style={{ marginLeft: "0px" }}>
                     Loading...
                   </Typography>
                 </div>

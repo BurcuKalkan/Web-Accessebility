@@ -13,7 +13,7 @@ import ButtonComponent from "../Button";
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
-  padding: theme.spacing(1),
+  padding: "0px",
   textAlign: "center",
   color: theme.palette.text.secondary,
 }));
@@ -30,8 +30,18 @@ function TabPanel(props) {
       style={{ height: "800px" }}
     >
       {selectedTab === index && (
-        <Box sx={{ p: 3, height: "100%" }}>
-          <Typography>{children}</Typography>
+        <Box sx={{ p: 0, height: "100%" }}>
+          <Typography
+            sx={{
+              "& .MuiBox-root": {
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+              },
+            }}
+          >
+            {children}
+          </Typography>
         </Box>
       )}
     </div>
@@ -50,10 +60,10 @@ export default function TabComponent(props) {
 
   const createDialog = () => {
     let existing = document.querySelector("#openDialog");
-    if(existing) return existing;
+    if (existing) return existing;
     const dialog = document.createElement("div");
 
-    dialog.id = 'openDialog'
+    dialog.id = "openDialog";
     dialog.style.display = "none";
     dialog.style.opacity = 0;
     dialog.style.transition =
@@ -73,12 +83,12 @@ export default function TabComponent(props) {
     dialog.style.position = "absolute";
     dialog.style.zIndex = 9999;
     dialog.style.transform = "translateX(-20px)";
+
     document.body.appendChild(dialog);
     return dialog;
   };
 
   const openDialog = createDialog();
-
 
   useEffect(() => {
     if (!props.result) return;
@@ -95,39 +105,20 @@ export default function TabComponent(props) {
     if (props.selectedTab === 0) {
       createImage(errList, "images/alt_missing.ico");
     }
-    
   }, [props.result]);
-
-
-  useEffect(() => {
-    if (selectedItemIndex !== -1) {
-      // ID ile newDiv'i iframeDocument içinde bulmalıyız
-      const iframeDocument = document.querySelector("#inlineFrameExample")
-        .contentWindow.document;
-      const newDiv = iframeDocument.getElementById(
-        `image-container-${selectedItemIndex}`
-      );
-
-      if (newDiv) {
-        openDialogHandler(selectedItem, newDiv);
-      } else {
-        console.error(
-          `newDiv with id image-container-${selectedItemIndex} not found`
-        );
-      }
-    }
-  }, [selectedItemIndex, selectedItem]);
-  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if(openDialog.style.display !== 'none' && openDialog.targetElementId === event.currentTarget.id){
+      if (
+        openDialog.style.display !== "none" &&
+        openDialog.targetElementId === event.currentTarget.id
+      ) {
         closeDialogHandler(openDialog);
       }
     };
 
     // Ana belgeye event listener ekle
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     const iframeElement = document.querySelector("#inlineFrameExample");
 
     const addIframeListeners = () => {
@@ -135,8 +126,12 @@ export default function TabComponent(props) {
 
       if (iframeDocument) {
         // Iframe içindeki click eventini dinle
-        iframeDocument.addEventListener('click', (event) => {
-          if (openDialog.style.display !== 'none' && event.selectedImg !=="selectedImg") {
+        iframeDocument.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (
+            openDialog.style.display !== "none" &&
+            event.selectedImg !== "selectedImg"
+          ) {
             closeDialogHandler(openDialog);
           }
         });
@@ -144,13 +139,12 @@ export default function TabComponent(props) {
     };
 
     // Iframe yüklendiğinde event listener ekle
-    iframeElement.addEventListener('load', addIframeListeners);
+    iframeElement.addEventListener("load", addIframeListeners);
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-
 
   const handleChange = (event, newValue) => {
     props.setSelectedTab(newValue);
@@ -170,11 +164,9 @@ export default function TabComponent(props) {
     }
   };
 
-
   const handleViewDetails = () => {
     props.setSelectedTab(1);
   };
-
 
   const errorList = (newList) =>
     newList.filter((issue) => issue.type === "error");
@@ -183,29 +175,57 @@ export default function TabComponent(props) {
   const warningList = (newList) =>
     newList.filter((issue) => issue.type === "warning");
 
-
-  const openDialogHandler  = (item, targetElement) => {
-  
+  const openDialogHandler = (item, targetElement) => {
     openDialog.targetElementId = targetElement.id;
 
-    // Dialog'un iframe'deki elementin üzerine gelmesi için pozisyonunu hesaplayın
     const iframe = document.querySelector("#inlineFrameExample");
     const iframeRect = iframe.getBoundingClientRect();
     const targetRect = targetElement.getBoundingClientRect();
     const dialogRect = openDialog.getBoundingClientRect();
-  
-    // Sayfa kaydırma miktarlarını al
-    const scrollTop = document.documentElement.scrollTop;
-    const scrollLeft = document.documentElement.scrollLeft;
-  
-    // Dialog'un iframe'deki elementin üzerine gelmesi için pozisyonunu hesaplayın
-    let dialogLeft = iframeRect.left + targetRect.left + scrollLeft - 200;
-    let dialogTop = iframeRect.top + targetRect.top + scrollTop + 30;
-  
-    // Eğer dialog sayfanın altına taşarsa, yukarıya kaydır
-    const viewportHeight = window.innerHeight;
-    if (dialogTop + dialogRect.height > viewportHeight + scrollTop) {
-      dialogTop = viewportHeight + scrollTop - dialogRect.height - 70; // 20px boşluk bırak
+
+    const iframeDocument =
+      iframe.contentDocument || iframe.contentWindow.document;
+
+    const scrollTopIframe =
+      iframeDocument.documentElement.scrollTop || iframeDocument.body.scrollTop;
+    const scrollLeftIframe =
+      iframeDocument.documentElement.scrollLeft ||
+      iframeDocument.body.scrollLeft;
+
+    // Ana sayfa scroll değerleri
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+    // Dialog'un konumunu hesapla
+    let dialogLeft =
+      iframeRect.left + targetRect.left + scrollLeftIframe + scrollLeft - 200;
+    let dialogTop =
+      iframeRect.top + targetRect.top + scrollTopIframe + scrollTop + 30;
+
+    // Dialog'un iframe sınırlarının dışına çıkıp çıkmadığını kontrol et
+    if (dialogLeft < iframeRect.left) {
+      dialogLeft = iframeRect.left; // Sol sınır
+    }
+    if (dialogLeft + dialogRect.width > iframeRect.right) {
+      dialogLeft = iframeRect.right - dialogRect.width; // Sağ sınır
+    }
+
+    // Eğer dialog üst sınırın üzerine çıkıyorsa, yukarıda konumlandır
+    if (dialogTop < iframeRect.top) {
+      dialogTop = iframeRect.top; // Üst sınır
+    }
+
+    // Dialogun alt kenarının iframe'in altına taşmasını engelle
+    if (dialogTop + dialogRect.height > iframeRect.bottom) {
+      dialogTop = targetRect.top + (150 - dialogRect.height) + 150; // Alt sınır
+    }
+
+    if (dialogTop > document.body.getBoundingClientRect().height - 50) {
+      dialogTop = document.body.getBoundingClientRect().height - 50;
+    }
+
+    if (dialogTop < 300) {
+      dialogTop = 300 + targetRect.top + targetRect.height;
     }
 
     openDialog.textContent = item.message;
@@ -219,8 +239,9 @@ export default function TabComponent(props) {
     }, 10);
   };
 
-
   const closeDialogHandler = () => {
+    clearImageStyles();
+
     openDialog.targetElementId = undefined;
     openDialog.style.opacity = 0;
     openDialog.style.transform = "translateX(-20px)";
@@ -230,7 +251,6 @@ export default function TabComponent(props) {
     if (openDialog.parentNode?.parentNode)
       openDialog.parentNode.parentNode.style.border = "";
   };
-
 
   const createImage = async (newList, src) => {
     const iframeDocument = document.querySelector("#inlineFrameExample")
@@ -254,11 +274,12 @@ export default function TabComponent(props) {
         newImage.src = src;
         newImage.alt = item.selector;
         newImage.style.zIndex = 800;
+        newImage.style.minHeight = "initial";
 
         newDiv.appendChild(newImage);
 
         newDiv.addEventListener("click", (event) => {
-          newDivClickHandler(event, item);
+          newDivClickHandler(event, item, index);
         });
 
         newDiv.addEventListener("mouseenter", () => {
@@ -270,25 +291,58 @@ export default function TabComponent(props) {
           newDiv.style.transform = "scale(1)";
         });
 
-        if (selectorResult) selectorResult.parentNode.appendChild(newDiv);
+        if (selectorResult) {
+          if (selectorResult.parentNode.style.display === "none") {
+            selectorResult.parentNode.style.display = "initial";
+          }
+          selectorResult.parentNode.appendChild(newDiv);
+        }
       } catch (error) {
         console.error("Error creating image:", error);
       }
     });
   };
 
+  const newDivClickHandler = (event, item, index) => {
+    event.preventDefault();
 
-  const newDivClickHandler = (event, item) => {
-    event.preventDefault(); 
-  
     const targetElement = event.currentTarget;
     event.selectedImg = "selectedImg";
-    if(openDialog.style.display !== 'none' && openDialog.targetElementId === event.currentTarget.id)
+    if (
+      openDialog.style.display !== "none" &&
+      openDialog.targetElementId === event.currentTarget.id
+    )
       closeDialogHandler();
-    else
+    else {
+      clearImageStyles();
+
+      const image = targetElement.querySelector("img");
+      if (image) {
+        image.style.border = "3px solid yellow"; // Sarı kenarlık
+        image.style.boxShadow =
+          "0 0 20px rgba(255, 255, 0, 0.8), 0 0 30px rgba(255, 255, 0, 0.5)";
+        image.style.transform = "scale(1.1)";
+        image.style.transition = "transform 0.2s ease, box-shadow 0.2s ease";
+      }
+
       openDialogHandler(item, targetElement);
+      setSelectedItem(item);
+      setSelectedItemIndex(index);
+    }
   };
 
+  const clearImageStyles = () => {
+    const iframeDocument = document.querySelector("#inlineFrameExample")
+      .contentWindow.document;
+    const images = iframeDocument.querySelectorAll(".image-container img");
+
+    images.forEach((image) => {
+      image.style.border = "";
+      image.style.boxShadow = "";
+      image.style.transform = "";
+      image.style.transition = "";
+    });
+  };
 
   const clearImages = () => {
     const iframeDocument = document.querySelector("#inlineFrameExample")
@@ -297,15 +351,43 @@ export default function TabComponent(props) {
     existingImages.forEach((div) => div.remove());
   };
 
-
   return (
     <div style={{ height: "800px" }}>
       {/* Tabs component */}
-      <Tabs selectedTab={props.selectedTab} onChange={handleChange}>
-        <Tab label="Summary" />
-        <Tab label="Error List" />
-        <Tab label="Warning List" />
-        <Tab label="Notice List" />
+      <Tabs
+        value={props.selectedTab}
+        onChange={handleChange}
+        variant="fullWidth"
+        indicatorColor="secondary"
+        textColor="inherit"
+        sx={{
+          "& .MuiTab-root": {
+            transition: "background-color 0.3s, transform 0.3s",
+            "min-width": "80px",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              transform: "scale(1.05)",
+            },
+            "&.Mui-selected": {
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              fontWeight: "bold",
+            },
+          },
+        }}
+      >
+        <Tab label="Summary" sx={{ fontSize: "0.875rem", maxWidth: "30px" }} />
+        <Tab
+          label="Error List"
+          sx={{ fontSize: "0.875rem", maxWidth: "30px" }}
+        />
+        <Tab
+          label="Warning List"
+          sx={{ fontSize: "0.875rem", maxWidth: "30px" }}
+        />
+        <Tab
+          label="Notice List"
+          sx={{ fontSize: "0.875rem", maxWidth: "30px" }}
+        />
       </Tabs>
 
       <TabPanel selectedTab={props.selectedTab} index={0}>
@@ -314,11 +396,8 @@ export default function TabComponent(props) {
           warning={props.warnings.length}
           notice={props.notices.length}
           setTab={props.setSelectedTab}
+          handleChange={handleChange}
         ></SummaryList>
-        <ButtonComponent
-          btnName={"View Details"}
-          handleSubmit={handleViewDetails}
-        ></ButtonComponent>
       </TabPanel>
 
       <TabPanel selectedTab={props.selectedTab} index={1}>

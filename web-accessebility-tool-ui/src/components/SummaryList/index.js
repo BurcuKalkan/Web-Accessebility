@@ -13,7 +13,7 @@ export default function SummaryList(props) {
     };
     return (
         <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            <ListItem alignItems="flex-start" button onClick={() => handleTabChange(1)}>
+            <ListItem alignItems="flex-start"  onClick={() => handleTabChange(1)}>
                 <ListItemAvatar>
                     <Avatar alt="Error" src="images/error.png" />
                 </ListItemAvatar>
