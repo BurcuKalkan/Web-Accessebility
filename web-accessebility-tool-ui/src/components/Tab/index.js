@@ -19,6 +19,12 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function TabPanel(props) {
   const { children, selectedTab, index, ...other } = props;
+
+  const cardHeight = 150; // Card bileşeninin yüksekliği
+  const margin = 40; // Margin toplamı (üst ve alt)
+  const windowHeight = window.innerHeight;
+
+  const remainingHeight = windowHeight - (cardHeight + margin) - 60;
   return (
     <div
       role="tabpanel"
@@ -26,7 +32,7 @@ function TabPanel(props) {
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
       {...other}
-      style={{ height: "800px" }}
+      style={{ height: `${remainingHeight}px` }}
     >
       {selectedTab === index && (
         <Box sx={{ p: 0, height: "100%" }}>
@@ -125,37 +131,39 @@ export default function TabComponent(props) {
     document.addEventListener("scroll", handleScroll);
     const iframeElement = document.querySelector("#inlineFrameExample");
 
-    const addIframeListeners = () => {
-      const iframeDocument = iframeElement?.contentWindow?.document;
+    if(iframeElement){
+      const addIframeListeners = () => {
+        const iframeDocument = iframeElement?.contentWindow?.document;
+  
+        if (iframeDocument) {
+          // Iframe içindeki click eventini dinle
+          iframeDocument.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (
+              openDialog.style.display !== "none" &&
+              event.selectedImg !== "selectedImg"
+            ) {
+              closeDialogHandler(openDialog);
+            }
+          });
+  
+          iframeDocument.addEventListener("scroll", handleScroll);
+        }
+      };
+  
+      // Iframe yüklendiğinde event listener ekle
+      iframeElement.addEventListener("load", addIframeListeners);
 
-      if (iframeDocument) {
-        // Iframe içindeki click eventini dinle
-        iframeDocument.addEventListener("click", (event) => {
-          event.preventDefault();
-          if (
-            openDialog.style.display !== "none" &&
-            event.selectedImg !== "selectedImg"
-          ) {
-            closeDialogHandler(openDialog);
-          }
-        });
-
-        iframeDocument.addEventListener("scroll", handleScroll);
-      }
-    };
-
-    // Iframe yüklendiğinde event listener ekle
-    iframeElement.addEventListener("load", addIframeListeners);
-
-    return () => {
-      // Clean up event listeners
-      document.removeEventListener("click", handleClickOutside);
-      document.removeEventListener("scroll", handleScroll);
-
-      if (iframeElement) {
-        iframeElement.removeEventListener("load", addIframeListeners);
-      }
-    };
+      return () => {
+        // Clean up event listeners
+        document.removeEventListener("click", handleClickOutside);
+        document.removeEventListener("scroll", handleScroll);
+  
+        if (iframeElement) {
+          iframeElement.removeEventListener("load", addIframeListeners);
+        }
+      };
+    }
   }, []);
 
   const handleChange = (event, newValue) => {
@@ -364,7 +372,7 @@ export default function TabComponent(props) {
   };
 
   return (
-    <div style={{ height: "800px" }}>
+    <div>
       {/* Tabs component */}
       <Tabs
         value={props.selectedTab}

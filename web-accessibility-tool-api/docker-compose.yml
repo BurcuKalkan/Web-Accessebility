@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo
+    container_name: watMongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: wat
+      MONGO_INITDB_ROOT_PASSWORD: wat12345
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - web-accessibility-network
+
+networks:
+  web-accessibility-network:
+
+volumes:
+  mongodb_data:

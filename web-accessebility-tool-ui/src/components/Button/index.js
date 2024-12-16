@@ -7,7 +7,7 @@ const useStyles = () => ({
         margin: '',
         color: 'white',
         background: 'blue',
-        marginTop: 50,
+        marginTop: 30,
         height: '40px',
         minWidth: '100px'
     }

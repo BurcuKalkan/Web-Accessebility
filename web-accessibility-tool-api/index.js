@@ -1,163 +1,117 @@
 const express = require('express');
 const pa11y = require('pa11y');
 const cors = require('cors');
-const { default: axios } = require('axios');
-const PORT = process.env.PORT || 3001;
+const axios= require('axios');
 const path = require('path');
-const fetch = require('node-fetch'); // Import fetch for making HTTP requests
-
-
-
-const puppeteer = require('puppeteer');
-
-let myurl;
-
-const fetchHTML = async (url) => {
-    const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-notifications'],
-    });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-
-    await page.goto(url,
-        {
-            timeout: 50000,
-            waitUntil: 'networkidle0'
-        }
-    );
-
-
-    const data = await page.evaluate(() => document.querySelector('*').outerHTML);
-
-    // Wait for an element that signifies the CSS/JS resources have loaded
-    await page.waitForSelector('body');
-
-
-    await browser.close();
-
-    // Regular expression pattern to match href="" but exclude those starting with http or https
-    const regex = /href="([^hHtTpsPS":])/g;
-    const regex2 = /src="([^hHtTpsPS":])/g;
-
-    const inter = data.replace(regex, `href="${(new URL(myurl)).origin}/`);
-
-
-    return inter.replace(regex2, `src="${(new URL(myurl)).origin}/`);;
-
-    return data;
-};
-
-// Usage
+const { Pa11yResult, connectDB } = require('./mongoose');
 
 
 const app = express();
+const PORT = 3001;
+app.use(cors({
+    origin: '*',
+}));
 
-app.use(cors());
+// MongoDB bağlantısını başlat
+connectDB();
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, "public")));
+
+function processResponse(data, url) {
+    const res = data.replaceAll('src="//', 'src="https://').replace(/src="(?!https?:\/\/)(\/?[^"]+)"/g, (match, path) => {
+      return `src="${url}${path.startsWith("/") ? "" : "/"}${path}"`;
+    });
+  
+   const res2= res.replaceAll('href="//', 'href="https://').replace(/href="(?!https?:\/\/)(\/?[^"]+)"/g, (match, path) => {
+      return `href="${url}${path.startsWith("/") ? "" : "/"}${path}"`;
+    });
+  
+    const lastSlashIndex = url.lastIndexOf('/');
+  
+    // URL'yi son '/' konumundan önceki kısmı alacak şekilde kes
+    const baseUrl = url.substring(0, lastSlashIndex);
+    
+    return res2.replaceAll('url(..', `url(${baseUrl}/..`).replaceAll('url("//', 'url("https://').replace(/url\("(?!https?:\/\/|data:image)(\/?[^"]+)"/g, (match, path) => {
+      return `url("${url}${path.startsWith('/') ? '' : '/'}${path}")`;
+  });
+  }
+
+function hasImage(url) {
+  return (
+    url.includes(".png") ||
+    url.includes(".svg") ||
+    url.includes(".jpg") ||
+    url.includes(".jpeg") ||
+    url.includes(".webp")
+  );
+}
+
+app.get("/proxy", async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) {
+    return res.status(400).send("URL parameter is required.");
+  }
+
+  try {
+     // Fetch the target URL's content
+    const response = await axios.get(targetUrl, {
+      headers: { "User-Agent": "Mozilla/5.0" }, // Mimic a browser
+      responseType: hasImage(targetUrl) ? "arraybuffer" : "",
+    });
+    const contentType = response.headers.get("content-type");
+    if (!contentType) {
+      return res.status(500).send("Unable to determine Content-Type");
+    }
+    console.log(contentType);
+
+    // Set the appropriate Content-Type header
+    res.set("content-type", contentType);
+
+    if (hasImage(targetUrl)) {
+      return res.send(response.data);
+    }
+
+    // Process the HTML content for links and resources
+    const processedHTML = processResponse(response.data, "http://localhost:3001/proxy?url=" + targetUrl);
+
+      res.send(processedHTML);
+  } catch (error) {
+    res.status(500).send("Error fetching content: " + error.message);
+  }
 });
 
-app.get('/api', async (req, res) => {
-    myurl = req.query.url;
+app.get("/pa11y", async (req, res) => {
+    const targetUrl = req.query.url;
 
-    if (!req.query.url) {
-        res.status(400).json(console.error('url is required'));
-    } else {
+    if (!targetUrl) {
+        return res.status(400).send("URL parameter is required.");
+      }
 
-        let browser;
-        let page;
-        let results;
-        let html;
-        try {
+            // Perform Pa11y accessibility testing
+    const pa11yResults = await pa11y(targetUrl, {
+        standard: 'WCAG2AA', // You can specify the standard (e.g., WCAG2A, WCAG2AA, etc.)
+        log: {
+          debug: console.log,
+          error: console.error,
+          info: console.log,
+        },
+        includeNotices: true,
+        includeWarnings: true,
+      });
 
-            // Launch our own browser
-            browser = await puppeteer.launch();
+        // Sonuçları MongoDB'ye kaydet
+        const savedResult = await Pa11yResult.create({
+            url: targetUrl,
+            results: pa11yResults,
+        });
 
-            // Create a page for the test runs
-            // (Pages cannot be used in multiple runs)
-            page = await browser.newPage();
-            await page.setContent(html, { waitUntil: 'domcontentloaded' });
-            await page.waitForSelector('body');
+        console.log("Results saved to MongoDB:", savedResult);
 
-            // Test http://example.com/ with our shared browser
-            results = await pa11y(myurl, {
-                browser,
-                page: page,
-                runners: [
-                    //'axe',
-                    'htmlcs'
-                ],
-                log: {
-                    debug: console.log,
-                    error: console.error,
-                    info: console.log
-                },
-                includeNotices: true,
-                includeWarnings: true,
-            });
-
-            const data = await page.evaluate(() => document.querySelector('*').outerHTML);
-
-            // Wait for an element that signifies the CSS/JS resources have loaded
-            await page.waitForSelector('body');
-
-            // Regular expression pattern to match href="" but exclude those starting with http or https
-            const regex = /href="([^hHtTpsPS":])/g;
-            const regex2 = /src="([^hHtTpsPS":])/g;
-
-            const inter = data.replace(regex, `href="${(new URL(myurl)).origin}/`);
-
-
-            html = inter.replace(regex2, `src="${(new URL(myurl)).origin}/`);
-
-            await page.close();
-            await browser.close();
-
-        } catch (error) {
-
-            // Output an error if it occurred
-            console.error(error.message);
-
-            // Close the browser instance and pages if theys exist
-            if (page) {
-                await page.close();
-            }
-            if (browser) {
-                await browser.close();
-            }
-        }
-
-        return res.status(200).json({ results, page: html });
-    }
+      res.json(pa11yResults);
 })
-/*
-app.get('*', async (req, res) => {
-    if (!myurl) {
-        // Handle requests for unmatched paths here
-        return res.status(404).send('404 - Not Found');
-    }
-    try {
-        // Extract the original URL from the request
-        const originalUrl = (new URL(myurl)).origin + req.originalUrl;
 
-        // Make a fetch request to the desired API endpoint with the modified URL
-        const response = await fetch(originalUrl);
-
-        const text = await response.text();
-        res.send(text);;
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-
-});
-*/
-
-app.listen(PORT, async () => {
-
-    console.log(`Server started on port ${PORT}`)
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });

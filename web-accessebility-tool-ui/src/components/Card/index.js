@@ -5,10 +5,11 @@ import ButtonComponent from '../Button';
 const useStyles = () => ({
     cardStyle: {
         width: '900px', // veya istediğiniz genişliği belirleyin
-        height: '200px', // veya istediğiniz yüksekliği belirleyin
+        height: '150px', // veya istediğiniz yüksekliği belirleyin
         backgroundColor: 'black',
         margin: 'auto',
-        marginTop: '100px',
+        marginTop: '30px',
+        marginBottom: '10px',
         borderRadius: '20px'
     },
 
@@ -22,7 +23,7 @@ const useStyles = () => ({
         margin: 'auto',
         background: 'white',
         width: 500,
-        marginTop: 50,
+        marginTop: 30,
         marginRight: 8,
     }
 });
