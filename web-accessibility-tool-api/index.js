@@ -73,7 +73,7 @@ app.get("/proxy", async (req, res) => {
     }
 
     // Process the HTML content for links and resources
-    const processedHTML = processResponse(response.data, "http://localhost:3001/proxy?url=" + targetUrl);
+    const processedHTML = processResponse(response.data, "http://localhost:3001/proxy?url=" + (new URL(targetUrl)).origin);
 
       res.send(processedHTML);
   } catch (error) {
