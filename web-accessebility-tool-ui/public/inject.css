@@ -1,0 +1,18 @@
+.element-marker-error {
+  width: 30px !important;
+  height: 30px !important;
+  z-index: 999;
+  position: relative;
+}
+.element-marker-warning {
+  width: 30px !important;
+  height: 30px !important;
+  z-index: 999;
+  position: relative;
+}
+.element-marker-notice {
+  width: 30px !important;
+  height: 30px !important;
+  z-index: 999;
+  position: relative;
+}

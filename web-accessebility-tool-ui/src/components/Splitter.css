@@ -1,0 +1,46 @@
+.splitter {
+  width: 16px;
+  background: #f0f0f0;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  user-select: none;
+  margin: 0 -8px;
+  position: relative;
+  z-index: 100;
+}
+
+.splitter:hover,
+.splitter.dragging {
+  background: #e0e0e0;
+}
+
+.splitter-handle {
+  width: 4px;
+  height: 48px;
+  background: #bbb;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.splitter:hover .splitter-handle,
+.splitter.dragging .splitter-handle {
+  background: #888;
+  height: 72px;
+}
+
+.audit-container {
+  user-select: none;
+}
+
+body.dragging-splitter {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+body.dragging-splitter iframe,
+body.dragging-splitter .right-panel {
+  pointer-events: none;
+}
