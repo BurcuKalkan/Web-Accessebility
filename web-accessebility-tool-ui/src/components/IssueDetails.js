@@ -313,8 +313,6 @@ function getRGB(e) {
                     <div className="issue-title">
                       Guideline: {issue.guideline}
                     </div>
-                  </div>
-                  <div className="issue-meta">
                     <div
                       className="elements-count"
                       style={{
@@ -324,11 +322,13 @@ function getRGB(e) {
                     >
                       {issue.totalElements}
                     </div>
+                    <div className="issue-meta">
                     {issue.items.length > 0 && (
                       <div className="expand-icon">
                         {expandedIssue === issue.id ? "▼" : "▶"}
                       </div>
                     )}
+                  </div>
                   </div>
                 </div>
                 {expandedIssue === issue.id && issue.items.length > 0 && (
