@@ -58,13 +58,9 @@ function App() {
   };
 
   const calcScore = () => {
-    return ((1000- (pa11yResult.errorCount*3 + pa11yResult.warningCount*1 + pa11yResult.noticeCount*0.5))/10).toFixed(2)
+    return (pa11yResult.errorCount*3 + pa11yResult.warningCount*1 + pa11yResult.noticeCount*0.5).toFixed(2)
   };
-  const proxyUrl = websiteUrl ? `http://localhost:3001/proxy?url=${encodeURIComponent(websiteUrl)}` : '';
-
-
-
-
+  const proxyUrl = websiteUrl ? `http://localhost:3001/proxy?url=${encodeURIComponent(websiteUrl)}` : ''
 
   if (!isAnalyzing) {
     return (
@@ -104,7 +100,24 @@ function App() {
     <div className="App">
       <div className="audit-container">
         <div className="audit-content">
-          <div className="left-panel" style={{ width: `${leftPanelWidth}%` }}>
+        <div className="left-panel" style={{ width: `${100 - leftPanelWidth}%` }}>
+            {isPa11yLoading ? (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Analyzing accessibility...</p>
+              </div>
+            ) : (
+              <>
+                <div className="criteria-score-section">
+                  <WCAGCriteria pa11yResult={pa11yResult} />
+                  <AuditScore score={calcScore()} />
+                </div>
+                <IssueDetails  pa11yResult={pa11yResult}/>
+              </>
+            )}
+          </div>
+          <Splitter onResize={handleSplitterResize} />
+          <div className="right-panel" style={{ width: `${leftPanelWidth}%` }}>
             <AuditHeader pa11yResult={pa11yResult} url={websiteUrl} onBackClick={handleBackClick} />            
             <div className="website-preview">
               <div className="iframe-container">
@@ -123,23 +136,8 @@ function App() {
               </div>
             </div>
           </div>
-          <Splitter onResize={handleSplitterResize} />
-          <div className="right-panel" style={{ width: `${100 - leftPanelWidth}%` }}>
-            {isPa11yLoading ? (
-              <div className="loading-spinner">
-                <div className="spinner"></div>
-                <p>Analyzing accessibility...</p>
-              </div>
-            ) : (
-              <>
-                <div className="criteria-score-section">
-                  <WCAGCriteria pa11yResult={pa11yResult} />
-                  <AuditScore score={calcScore()} />
-                </div>
-                <IssueDetails  pa11yResult={pa11yResult}/>
-              </>
-            )}
-          </div>
+         
+
         </div>
       </div>
     </div>

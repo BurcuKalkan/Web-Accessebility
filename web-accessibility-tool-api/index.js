@@ -158,8 +158,6 @@ processGuideLines = (item, collection) => {
     obj = {
       guideline,
       totalElements: 0,
-      disabilities: ["Blind", "Deafblind", "+1 more"],
-      criteria: ["Level A", "+3 more"],
       items: [],
     };
     collection.push(obj);

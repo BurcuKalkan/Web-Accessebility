@@ -25,15 +25,10 @@ const WCAGCriteria = ({pa11yResult}) => {
   };
 
   const criteriaInfo = {
-    'Critical Issues': {
+    'Errors': {
       description: 'These are accessibility violations that severely impact users and need immediate attention.',
       examples: ['Missing alt text for images', 'Keyboard traps', 'Invalid ARIA attributes'],
       impact: 'High - These issues make content inaccessible to many users'
-    },
-    'Passed Audits': {
-      description: 'Successfully implemented accessibility features that meet WCAG guidelines.',
-      examples: ['Proper heading structure', 'Sufficient color contrast', 'Valid form labels'],
-      impact: 'Positive - These help ensure content is accessible to all users'
     },
     'Warnings': {
       description: 'Aspects that need human verification as they cannot be automatically tested.',
@@ -51,24 +46,36 @@ const WCAGCriteria = ({pa11yResult}) => {
     <div className="wcag-criteria" ref={containerRef}>
       <div className="criteria-header">
         <h3>WCAG 2.2 Criteria:</h3>
-        <button className="info-button">ⓘ What is WCAG?</button>
+        <button
+          className="info-button"
+          onClick={() =>
+            window.open(
+              "https://www.w3.org/WAI/standards-guidelines/wcag/",
+              "_blank"
+            )
+          }
+          aria-label="Learn more about WCAG"
+        >
+          ⓘ What is WCAG?
+        </button>
       </div>
-      
+
       <div className="criteria-list">
         {Object.entries({
-          'Critical Issues': pa11yResult.errorCount,
-          'Passed Audits': 0,
-          'Warnings': pa11yResult.warningCount,
-          'Notices': pa11yResult.noticeCount
+          Errors: pa11yResult.errorCount,
+          Warnings: pa11yResult.warningCount,
+          Notices: pa11yResult.noticeCount,
         }).map(([type, count]) => (
-          <div 
+          <div
             key={type}
-            className={`criteria-item ${selectedCriteria === type ? 'selected' : ''}`}
+            className={`criteria-item ${
+              selectedCriteria === type ? "selected" : ""
+            }`}
             onClick={() => handleCriteriaClick(type)}
             role="button"
             tabIndex={0}
             onKeyPress={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 handleCriteriaClick(type);
               }
             }}
@@ -81,22 +88,30 @@ const WCAGCriteria = ({pa11yResult}) => {
 
       {selectedCriteria && (
         <div className="criteria-details">
-          <button 
-            className="close-button" 
+          <button
+            className="close-button"
             onClick={() => setSelectedCriteria(null)}
             aria-label="Close details"
           >
             ×
           </button>
           <h4>{selectedCriteria}</h4>
-          <p><strong>Description:</strong> {criteriaInfo[selectedCriteria].description}</p>
-          <p><strong>Examples:</strong></p>
+          <p>
+            <strong>Description:</strong>{" "}
+            {criteriaInfo[selectedCriteria].description}
+          </p>
+          <p>
+            <strong>Examples:</strong>
+          </p>
           <ul>
             {criteriaInfo[selectedCriteria].examples.map((example, index) => (
               <li key={index}>{example}</li>
             ))}
           </ul>
-          <p><strong>Impact Level:</strong> {criteriaInfo[selectedCriteria].impact}</p>
+          <p>
+            <strong>Impact Level:</strong>{" "}
+            {criteriaInfo[selectedCriteria].impact}
+          </p>
         </div>
       )}
     </div>

@@ -274,7 +274,7 @@ function getRGB(e) {
           onClick={() => setSelectedTab("error")}
         >
           <span className="tab-icon">🚨</span>
-          Critical Issues
+          Errors
         </button>
         <button
           className={`${selectedTab === "warning" ? "active" : ""}`}
@@ -323,20 +323,6 @@ function getRGB(e) {
                       }}
                     >
                       {issue.totalElements}
-                    </div>
-                    <div className="disabilities">
-                      {issue.disabilities.map((disability, index) => (
-                        <span key={index} className="disability-tag">
-                          {disability}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="criteria">
-                      {issue.criteria.map((criterion, index) => (
-                        <span key={index} className="criteria-tag">
-                          {criterion}
-                        </span>
-                      ))}
                     </div>
                     {issue.items.length > 0 && (
                       <div className="expand-icon">
