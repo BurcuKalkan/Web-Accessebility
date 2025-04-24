@@ -13,7 +13,7 @@ window.addEventListener("message", (message) => {
       removeMarkers();
       currentMarkers=undefined;
       break;
-      case "selectMarker":
+    case "selectMarker":
         selectMarker(message.data.selector, message.data.msgtype, message.data.id);
         break;
     default:
@@ -49,6 +49,7 @@ function selectMarker(selector, type, id) {
           }
         `;
         document.head.appendChild(style);
+       window.parent.postMessage({id,type:"selectback",bg:element.bg,fg:element.fg}, "*");
        element.scrollIntoView({ behavior: "smooth", block: "center" });
     } else {
       console.log("Element not found for selector:", selector);
@@ -68,6 +69,8 @@ function addMarker(selector, type, id) {
     marker.id = `element-marker-${id}`;
     marker.src = `http://localhost:4002/${type}.ico`;
     marker.className = `element-marker-${type}`;
+    marker.bg = getEffectiveBackgroundColorHex(element);
+    marker.fg = getTextColorHex(element);
     element.style.position = "relative";
     element.parentElement.appendChild(marker);
     // element.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -78,6 +81,38 @@ function addMarker(selector, type, id) {
 
 function removeMarkers() {
     document.querySelectorAll(currentMarkers).forEach((el) => el.remove());
+}
+
+
+function rgbaToHex(rgba) {
+  const result = rgba.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
+  if (!result) return null;
+
+  const r = parseInt(result[1]).toString(16).padStart(2, '0');
+  const g = parseInt(result[2]).toString(16).padStart(2, '0');
+  const b = parseInt(result[3]).toString(16).padStart(2, '0');
+  const a = result[4] !== undefined ? parseFloat(result[4]) : 1;
+
+  return {
+    hex: `#${r}${g}${b}`,
+    alpha: a
+  };
+}
+
+function getEffectiveBackgroundColorHex (element){
+  while (element && element !== document.documentElement) {
+    const bg = getComputedStyle(element).backgroundColor;
+    if (bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+      return rgbaToHex(bg);
+    }
+    element = element.parentElement;
+  }
+  return rgbaToHex(getComputedStyle(document.documentElement).backgroundColor);
+}
+
+function getTextColorHex (element) {
+  const color = getComputedStyle(element).color;
+  return rgbaToHex(color);
 }
 
 /*function inj() {

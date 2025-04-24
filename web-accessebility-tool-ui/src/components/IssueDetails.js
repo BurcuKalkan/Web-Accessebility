@@ -13,9 +13,15 @@ const IssueDetails = ({ pa11yResult }) => {
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("Received message:", event.data);
-      event.data.type &&
-        event.data.id &&
-        selectAndScrollToElement(event.data.id, event.data.type);
+      if (event.data.type && event.data.id) {
+        if (event.data.type == "selectback") {
+          setBgColor(event.data.bg.hex);
+          setFgColor(event.data.fg.hex);
+          setFgAlpha(event.data.fg.alpha);
+        } else {
+          selectAndScrollToElement(event.data.id, event.data.type);
+        }
+      }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
@@ -236,25 +242,30 @@ const IssueDetails = ({ pa11yResult }) => {
 
   function Dec2(e) {
     if (-1 !== (e = String(e)).indexOf(".")) {
-        var t = e.split(".");
-        return 1 == t.length ? Number(e) : Number(t[0] + "." + t[1].charAt(0) + t[1].charAt(1))
+      var t = e.split(".");
+      return 1 == t.length
+        ? Number(e)
+        : Number(t[0] + "." + t[1].charAt(0) + t[1].charAt(1));
     }
-    return Number(e)
-}
-
-function getsRGB(e) {
-  return e = (e = getRGB(e) / 255) <= .03928 ? e / 12.92 : Math.pow((e + .055) / 1.055, 2.4)
-}
-
-function getRGB(e) {
-  try {
-      e = parseInt(e, 16)
-  } catch (t) {
-      e = !1
+    return Number(e);
   }
-  return e
-}
-  function calculateContrast(f,b) {
+
+  function getsRGB(e) {
+    return (e =
+      (e = getRGB(e) / 255) <= 0.03928
+        ? e / 12.92
+        : Math.pow((e + 0.055) / 1.055, 2.4));
+  }
+
+  function getRGB(e) {
+    try {
+      e = parseInt(e, 16);
+    } catch (t) {
+      e = !1;
+    }
+    return e;
+  }
+  function calculateContrast(f, b) {
     var e = getL(RGBAtoRGB(f, b)),
       t = getL(b),
       n = (Math.max(e, t) + 0.05) / (Math.min(e, t) + 0.05);
@@ -264,7 +275,7 @@ function getRGB(e) {
   function extractContrastRatio(text) {
     const match = text.match(/(\d+(\.\d+)?\s*:\s*1)/);
     return match ? match[1].trim() : null;
-}
+  }
 
   return (
     <div className="issue-details">
@@ -323,12 +334,12 @@ function getRGB(e) {
                       {issue.totalElements}
                     </div>
                     <div className="issue-meta">
-                    {issue.items.length > 0 && (
-                      <div className="expand-icon">
-                        {expandedIssue === issue.id ? "▼" : "▶"}
-                      </div>
-                    )}
-                  </div>
+                      {issue.items.length > 0 && (
+                        <div className="expand-icon">
+                          {expandedIssue === issue.id ? "▼" : "▶"}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {expandedIssue === issue.id && issue.items.length > 0 && (
@@ -348,15 +359,18 @@ function getRGB(e) {
                         }}
                         data-element-id={element.id}
                       >
-                       { (element.code.includes("BgImage") || (element.message.includes("contrast ratio"))) && (<div className="element-number-container">
-                          <div className="element-number">{index + 1}</div>
-                          <button
-                            className="select-button"
-                            onClick={() => handleSelectClick(element)}
-                          >
-                            <span className="icon">⚙️</span>
-                          </button>
-                        </div>)}
+                        {(element.code.includes("BgImage") ||
+                          element.message.includes("contrast ratio")) && (
+                          <div className="element-number-container">
+                            <div className="element-number">{index + 1}</div>
+                            <button
+                              className="select-button"
+                              onClick={() => handleSelectClick(element)}
+                            >
+                              <span className="icon">⚙️</span>
+                            </button>
+                          </div>
+                        )}
                         <div className="element-details">
                           <div className="element-title">Selector</div>
                           <div className="element-selector">
@@ -390,7 +404,6 @@ function getRGB(e) {
               </button>
             </div>
             <div className="modal-body">
-
               <div className="modal-section">
                 <h4>Element</h4>
                 <div
@@ -407,9 +420,9 @@ function getRGB(e) {
                   }}
                 >
                   {selectedElement.context ? (
-                    <div
+                    <div 
                       dangerouslySetInnerHTML={{
-                        __html: selectedElement.context,
+                        __html: insertAfterFirstSpace(selectedElement.context," style=\"all:unset;\" "),
                       }}
                     />
                   ) : (
@@ -418,8 +431,26 @@ function getRGB(e) {
                 </div>
               </div>
               <div className="modal-section">
-                <h4>Contrast Ratio: { Dec2((100 * (calculateContrast(fgColor.split("#")[1], bgColor.split("#")[1]))) / 100) + ":1" }</h4>
-                <h4>AA ({extractContrastRatio(selectedElement.message)}): {(calculateContrast(fgColor.split("#")[1], bgColor.split("#")[1])) >= parseFloat(extractContrastRatio(selectedElement.message)) ? "Pass" : "Fail"}</h4>                 
+                <h4>
+                  Contrast Ratio:{" "}
+                  {Dec2(
+                    (100 *
+                      calculateContrast(
+                        fgColor.split("#")[1],
+                        bgColor.split("#")[1]
+                      )) /
+                      100
+                  ) + ":1"}
+                </h4>
+                <h4>
+                  AA ({extractContrastRatio(selectedElement.message)}):{" "}
+                  {calculateContrast(
+                    fgColor.split("#")[1],
+                    bgColor.split("#")[1]
+                  ) >= parseFloat(extractContrastRatio(selectedElement.message))
+                    ? "Pass"
+                    : "Fail"}
+                </h4>
               </div>
 
               <div className="modal-section">
@@ -501,5 +532,11 @@ function getRGB(e) {
     </div>
   );
 };
+
+function insertAfterFirstSpace(original, insert) {
+  return original.indexOf(' ') === -1 
+    ? original + insert 
+    : original.replace(/^(.*?)\s/, '$1' + insert + ' ');
+}
 
 export default IssueDetails;
