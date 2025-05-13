@@ -22,7 +22,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 app.use(express.static(path.join(__dirname, "public")));
 
 function processResponse(data, url) {
-  const res = data.replaceAll('src="//', 'src="https://').replace(/src="(?!https?:\/\/)(\/?[^"]+)"/g, (match, path) => {
+  const res = data.replaceAll('src="/', `src="${url}"`).replaceAll('src="//', 'src="https://').replace(/src="(?!https?:\/\/)(\/?[^"]+)"/g, (match, path) => {
     return `src="${url}${path.startsWith("/") ? "" : "/"}${path}"`;
   });
 
@@ -264,6 +264,10 @@ app.get("/decode/:input", (req, res) => {
       details: error.message,
     });
   }
+});
+
+app.use((req, res) => {
+  res.status(304).json({ message: 'API endpoint not found', data: null });
 });
 
 // Start the server

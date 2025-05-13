@@ -45,7 +45,7 @@ const WCAGCriteria = ({pa11yResult}) => {
   return (
     <div className="wcag-criteria" ref={containerRef}>
       <div className="criteria-header">
-        <h3>WCAG 2.2 Criteria:</h3>
+        <h3>WCAG 2.1 Criteria:</h3>
         <button
           className="info-button"
           onClick={() =>

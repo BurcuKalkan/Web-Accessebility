@@ -131,7 +131,8 @@ function App() {
                   title="Website Preview"
                   onLoad={() => setIframeLoading(false)}
                   loading="lazy"
-                 // sandbox="allow-same-origin  allow-popups"
+                  
+                  sandbox="allow-scripts allow-same-origin"
                 ></iframe>
               </div>
             </div>
